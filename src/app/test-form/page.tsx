@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 // import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient"; // 1. 引入 supabase client
 
 export default function Form() {
   const [form, setForm] = useState({
@@ -14,10 +15,27 @@ export default function Form() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // 2. handleSubmit 改為 async
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert(`你輸入的內容：\n名字：${form.name}\nEmail：${form.email}\n電話：${form.phone}`);
-    setForm({ name: "", email: "", phone: "" });
+
+    // 呼叫 supabase insert
+    const { error } = await supabase
+      .from("TestForm")
+      .insert([
+        {
+          name: form.name,
+          email: form.email,
+          phone: form.phone
+        }
+      ]);
+
+    if (error) {
+      alert("儲存失敗：" + error.message);
+    } else {
+      alert(`已成功儲存！\n名字：${form.name}\nEmail：${form.email}\n電話：${form.phone}`);
+      setForm({ name: "", email: "", phone: "" });
+    }
   };
 
   return (
